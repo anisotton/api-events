@@ -19,4 +19,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 //Route::get('events','Api\EventApiController@index');
 
+
+//Routes Auth
+$this->post('login','Auth\AuthenticateController@authenticate');
+$this->get('me','Auth\AuthenticateController@getAuthenticatedUser');
+
+
+
 $this->apiResource('events','Api\EventApiController');
