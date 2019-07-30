@@ -23,8 +23,39 @@ class EventApiController extends Controller
      */
     public function index()
     {
-        $data = $this->event->all();
+        $data = $this->event->where('user_id',auth()->user()->id)->get();
         return response()->json($data);
+    }
+
+    public function allEvents()
+    {
+        $data = $this->event->where('published',1)->get();
+        return response()->json($data);
+    }
+
+    
+        
+
+       
+    public function publish($id, $value = 1)
+    {
+        if (!$data = $this->event->find($id))
+        return response()->json(['error' => "Dado não encontrado"], 404);
+
+
+        if ($data->user_id != auth()->user()->id)
+            return response()->json(['message' => "Non-Authoritative"], 203);       
+
+        //dd($value);
+
+        $data->update(['published'=>$value]);
+
+        return response()->json($data);
+    }
+
+    public function unpublish($id)
+    {
+        return $this->publish($id,0);
     }
 
 
@@ -54,7 +85,7 @@ class EventApiController extends Controller
                 $dataForm['cover_image'] = $nameFile;
             }
         }
-
+        $dataForm['user_id'] = auth()->user()->id;
         $data = $this->event->create($dataForm);
 
         return response()->json($data, 201);
@@ -69,7 +100,13 @@ class EventApiController extends Controller
     public function show($id)
     {
         if (!$data = $this->event->find($id)) {
-            return response()->json(['error' => "Dado não encontrado"], 404);
+
+            if($data->user_id != auth()->user()->id){
+                return response()->json(['message' => "Non-Authoritative"], 203);
+            }else{
+                return response()->json(['error' => "Dado não encontrado"], 404);
+            }
+
         } else {
             return response()->json($data);
         }
@@ -86,6 +123,11 @@ class EventApiController extends Controller
     {
         if (!$data = $this->event->find($id))
             return response()->json(['error' => "Dado não encontrado"], 404);
+
+
+        if ($data->user_id != auth()->user()->id)
+            return response()->json(['message' => "Non-Authoritative"], 203);
+
 
         $this->validate($request, $this->event->rules());
 
@@ -126,6 +168,9 @@ class EventApiController extends Controller
     {
         if (!$data = $this->event->find($id))
             return response()->json(['error' => "Dado não encontrado"], 404);
+
+        if ($data->user_id != auth()->user()->id)
+            return response()->json(['message' => "Non-Authoritative"], 203);
 
         if ($data->cover_image) {
             Storage::disk('public')->delete("/events/{$data->cover_image}");

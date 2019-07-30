@@ -1,29 +1,24 @@
 <?php
+//Rotas de Login
 
-use Illuminate\Http\Request;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
-
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+$this->group(['namespace' => 'Auth'], function () {    
+    $this->post('login', 'AuthenticateController@authenticate');
+    $this->post('logout', 'AuthenticateController@logout');
+    $this->post('login-refresh', 'AuthenticateController@refreshToken');
+    $this->get('me', 'AuthenticateController@getAuthenticatedUser');
 });
 
-//Route::get('events','Api\EventApiController@index');
+$this->group(['namespace' => 'Api'], function () {
+    $this->get('all-events', 'EventApiController@allEvents');
+});
 
 
-//Routes Auth
-$this->post('login','Auth\AuthenticateController@authenticate');
-$this->get('me','Auth\AuthenticateController@getAuthenticatedUser');
+$this->group(['namespace' => 'Api', 'middleware' => 'auth:api'], function () {
+    $this->apiResource('events', 'EventApiController');
+    $this->get('event/{id}/publish', 'EventApiController@publish');
+    $this->get('event/{id}/unpublish', 'EventApiController@unpublish');
+});
 
 
 
-$this->apiResource('events','Api\EventApiController');

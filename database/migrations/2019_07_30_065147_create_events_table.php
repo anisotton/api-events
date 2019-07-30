@@ -15,11 +15,12 @@ class CreateEventsTable extends Migration
     {
         Schema::create('events', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('id_user');
+            $table->integer('user_id')->unsigned();
+            $table->foreign('user_id')->references('id')->on('users');
             $table->string('name',150)->nullable();
             $table->text('description')->nullable();
             $table->string('cover_image', 200)->nullable();
-            $table->integer('publised')->default(0);
+            $table->integer('published')->default(0);
             $table->timestamps();
         });
     }
