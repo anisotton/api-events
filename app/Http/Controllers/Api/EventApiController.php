@@ -46,7 +46,7 @@ class EventApiController extends Controller
 
             $nameFile = "{$name}.{$ext}";
 
-            $upload = Image::make($dataForm['image'])->resize(800, 600)->save(storage_path("app/public/events/{$nameFile}",100));
+            $upload = Image::make($dataForm['image'])->resize(850, 315)->save(storage_path("app/public/events/{$nameFile}",100));
 
             if(!$upload){
                 return response()->json(['error' => "Erro ao fazer upload do arquivo"],500);
