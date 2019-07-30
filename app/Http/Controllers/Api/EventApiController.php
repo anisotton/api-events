@@ -40,20 +40,19 @@ class EventApiController extends Controller
 
         $dataForm = $request->all();
 
-        if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            $ext = $request->image->extension();
+        if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid()) {
+            $ext = $request->cover_image->extension();
             $name = uniqid(date('His'));
 
             $nameFile = "{$name}.{$ext}";
 
-            $upload = Image::make($dataForm['image'])->resize(850, 315)->save(storage_path("app/public/events/{$nameFile}",100));
+            $upload = Image::make($dataForm['cover_image'])->resize(850, 315)->save(storage_path("app/public/events/{$nameFile}", 100));
 
-            if(!$upload){
-                return response()->json(['error' => "Erro ao fazer upload do arquivo"],500);
-            }else{
-                $dataForm['image'] = $nameFile;
+            if (!$upload) {
+                return response()->json(['error' => "Erro ao fazer upload do arquivo"], 500);
+            } else {
+                $dataForm['cover_image'] = $nameFile;
             }
-
         }
 
         $data = $this->event->create($dataForm);
@@ -69,7 +68,11 @@ class EventApiController extends Controller
      */
     public function show($id)
     {
-        //
+        if (!$data = $this->event->find($id)) {
+            return response()->json(['error' => "Dado não encontrado"], 404);
+        } else {
+            return response()->json($data);
+        }
     }
 
     /**
@@ -81,7 +84,36 @@ class EventApiController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        if (!$data = $this->event->find($id))
+            return response()->json(['error' => "Dado não encontrado"], 404);
+
+        $this->validate($request, $this->event->rules());
+
+        $dataForm = $request->all();
+
+        if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid()) {
+
+            if ($data->cover_image) {
+                Storage::disk('public')->delete("/events/{$data->cover_image}");
+            }
+
+            $ext = $request->cover_image->extension();
+            $name = uniqid(date('His'));
+
+            $nameFile = "{$name}.{$ext}";
+
+            $upload = Image::make($dataForm['cover_image'])->resize(850, 315)->save(storage_path("app/public/events/{$nameFile}", 100));
+
+            if (!$upload) {
+                return response()->json(['error' => "Erro ao fazer upload do arquivo"], 500);
+            } else {
+                $dataForm['cover_image'] = $nameFile;
+            }
+        }
+
+        $data->update($dataForm);
+
+        return response()->json($data);
     }
 
     /**
@@ -92,6 +124,15 @@ class EventApiController extends Controller
      */
     public function destroy($id)
     {
-        //
+        if (!$data = $this->event->find($id))
+            return response()->json(['error' => "Dado não encontrado"], 404);
+
+        if ($data->cover_image) {
+            Storage::disk('public')->delete("/events/{$data->cover_image}");
+        }
+
+        $data->delete();
+
+        return response()->json(['success' => "Evento deletado com sucesso!"]);
     }
 }
