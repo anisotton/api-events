@@ -17,45 +17,112 @@ class EventApiController extends Controller
         $this->request = $request;
     }
     /**
-     * Display a listing of the resource.
+     * List events
      *
-     * @return \Illuminate\Http\Response
+     * Metodo que lista os eventos do usuario logado
+     * 
+     * @response {[
+     *  "id": 1,
+     *  "user_id": 1,
+     *  "name": "Event 2",
+     *  "description": "Desc event 2",
+     *  "cover_image": "2049155d40ad4b9ffdd.png",
+     *  "published": 1,
+     *  "created_at": "2019-07-30 20:41:05",
+     *  "updated_at": "2019-07-31 04:18:23"
+     * ]}
+     *
      */
     public function index()
     {
-        $data = $this->event->where('user_id',auth()->user()->id)->get();
+        $data = $this->event->where('user_id', auth()->user()->id)->get();
         return response()->json($data);
     }
+
+    /**
+     * List all events
+     *
+     * Metodo que lista todos os eventos publicados
+     * 
+     * @response {[
+     *  "id": 1,
+     *  "user_id": 1,
+     *  "name": "Event 2",
+     *  "description": "Desc event 2",
+     *  "cover_image": "2049155d40ad4b9ffdd.png",
+     *  "published": 1,
+     *  "created_at": "2019-07-30 20:41:05",
+     *  "updated_at": "2019-07-31 04:18:23"
+     * ]}
+     *
+     */
 
     public function allEvents()
     {
-        $data = $this->event->where('published',1)->get();
+        $data = $this->event->where('published', 1)->get();
         return response()->json($data);
     }
 
-    
-        
 
-       
+
+
+/**
+     * publish
+     *
+     * Metodo que publica um evento
+     * 
+     * @queryParam id Id do evento a ser publicado
+     * 
+     * @response {
+     *  "id": 1,
+     *  "user_id": 1,
+     *  "name": "Event 2",
+     *  "description": "Desc event 2",
+     *  "cover_image": "2049155d40ad4b9ffdd.png",
+     *  "published": 1,
+     *  "created_at": "2019-07-30 20:41:05",
+     *  "updated_at": "2019-07-31 04:18:23"
+     * }
+     *
+     */
     public function publish($id, $value = 1)
     {
         if (!$data = $this->event->find($id))
-        return response()->json(['error' => "Dado não encontrado"], 404);
+            return response()->json(['error' => "Dado não encontrado"], 404);
 
 
         if ($data->user_id != auth()->user()->id)
-            return response()->json(['message' => "Non-Authoritative"], 203);       
+            return response()->json(['message' => "Non-Authoritative"], 203);
 
         //dd($value);
 
-        $data->update(['published'=>$value]);
+        $data->update(['published' => $value]);
 
         return response()->json($data);
     }
 
+/**
+     * Unpublish
+     *
+     * [Metodo que despublica um evento]
+     * 
+     * @queryParam id Id do evento a ser despublicado
+     * 
+     * @response {
+     *  "id": 1,
+     *  "user_id": 1,
+     *  "name": "Event 2",
+     *  "description": "Desc event 2",
+     *  "cover_image": "2049155d40ad4b9ffdd.png",
+     *  "published": 0,
+     *  "created_at": "2019-07-30 20:41:05",
+     *  "updated_at": "2019-07-31 04:18:23"
+     * }
+     *
+     */
     public function unpublish($id)
     {
-        return $this->publish($id,0);
+        return $this->publish($id, 0);
     }
 
 
@@ -101,12 +168,11 @@ class EventApiController extends Controller
     {
         if (!$data = $this->event->find($id)) {
 
-            if($data->user_id != auth()->user()->id){
+            if ($data->user_id != auth()->user()->id) {
                 return response()->json(['message' => "Non-Authoritative"], 203);
-            }else{
+            } else {
                 return response()->json(['error' => "Dado não encontrado"], 404);
             }
-
         } else {
             return response()->json($data);
         }
